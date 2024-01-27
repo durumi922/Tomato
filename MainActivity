@@ -1,0 +1,103 @@
+package com.zaksim.tomato
+
+// MainActivity.kt
+
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var timerCircle: ImageView
+    private lateinit var timerText: TextView
+    private lateinit var startButton: Button
+    private lateinit var pauseButton: Button
+    private lateinit var resetButton: Button
+
+    private lateinit var countDownTimer: CountDownTimer
+    private var timerIsRunning = false
+    private var timeLeftInMillis: Int = START_TIME_IN_MILLIS
+
+    companion object {
+        private const val START_TIME_IN_MILLIS = 1500000 // 25 minutes in milliseconds
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        timerCircle = findViewById(R.id.timerCircle)
+        timerText = findViewById(R.id.timerText)
+        startButton = findViewById(R.id.startButton)
+        pauseButton = findViewById(R.id.pauseButton)
+        resetButton = findViewById(R.id.resetButton)
+
+        startButton.setOnClickListener {
+            startTimer()
+        }
+
+        pauseButton.setOnClickListener {
+            pauseTimer()
+        }
+
+        resetButton.setOnClickListener {
+            resetTimer()
+        }
+
+        updateTimerText()
+    }
+
+    private fun startTimer() {
+        if (!timerIsRunning) {
+            countDownTimer = object : CountDownTimer(timeLeftInMillis.toLong(), 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    timeLeftInMillis = millisUntilFinished.toInt()
+                    updateTimerText()
+                }
+
+                override fun onFinish() {
+                    timerIsRunning = false
+                    updateTimerText()
+                    // 여기에 타이머가 종료되었을 때의 동작 추가
+                }
+            }.start()
+
+            timerIsRunning = true
+            updateTimerText()
+        }
+    }
+
+    private fun pauseTimer() {
+        if (timerIsRunning) {
+            countDownTimer.cancel()
+            timerIsRunning = false
+            updateTimerText()
+        }
+    }
+
+    private fun resetTimer() {
+        countDownTimer.cancel()
+        timerIsRunning = false
+        timeLeftInMillis = START_TIME_IN_MILLIS
+        updateTimerText()
+    }
+
+    private fun updateTimerText() {
+        val minutes = (timeLeftInMillis / 1000) / 60
+        val seconds = (timeLeftInMillis / 1000) % 60
+        val timeLeftFormatted = String.format("%02d:%02d", minutes, seconds)
+        timerText.text = timeLeftFormatted
+
+        if (timerIsRunning) {
+            startButton.visibility = View.GONE
+            pauseButton.visibility = View.VISIBLE
+        } else {
+            startButton.visibility = View.VISIBLE
+            pauseButton.visibility = View.GONE
+        }
+    }
+}
