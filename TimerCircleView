@@ -1,0 +1,55 @@
+package com.zaksim.tomato
+
+import android.animation.ValueAnimator
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.View
+import androidx.core.content.ContextCompat
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+
+class TimerCircleView : View {
+
+    private val circlePaint = Paint()
+    private lateinit var timerDrawable: Drawable
+    private var radius = 100f // 초기 반지름 값
+
+    constructor(context: Context) : super(context) {
+        init()
+    }
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
+        init()
+    }
+
+    private fun init() {
+        circlePaint.color = ContextCompat.getColor(context, R.color.timerCircleColor)
+        timerDrawable = ContextCompat.getDrawable(context, R.drawable.timer_circle)!!
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        timerDrawable.setBounds(
+            (width / 2 - radius).toInt(),
+            (height / 2 - radius).toInt(),
+            (width / 2 + radius).toInt(),
+            (height / 2 + radius).toInt()
+        )
+        timerDrawable.draw(canvas)
+    }
+
+    fun startAnimation(duration: Long) {
+        val initialRadius = radius // 초기 반지름 값 저장
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+        animator.duration = duration
+        animator.interpolator = FastOutSlowInInterpolator()
+        animator.addUpdateListener { valueAnimator ->
+            val fraction = valueAnimator.animatedValue as Float
+            radius = initialRadius * (1 - fraction) // 줄어드는 애니메이션
+            invalidate()
+        }
+        animator.start()
+    }
+}
